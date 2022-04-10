@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+# This script is a way to set up or update your development environment automatically.
+# This script is idempotent, so that you can run it at any time and get an expectable outcome.
+# Add necessary setup steps to this file.
+
+require "fileutils"
+
+# path to your application root.
+APP_ROOT = File.expand_path('..', __dir__)
+
+def system!(*args)
+  system(*args) || abort("\n== Command #{args} failed ==")
+end
+
+def brew!(package, cmd: package)
+  system("command -v #{cmd} > /dev/null && echo '#{package} is already installed'") ||
+    system!("HOMEBREW_NO_AUTO_UPDATE=1 brew install #{package}")
+end
+
+def say(message)
+  puts "\n== #{message} =="
+end
+
+FileUtils.chdir APP_ROOT do
+
+  if system("command -v brew > /dev/null") && !ARGV.include?("--skip-brew")
+    say "Installing Homebrew dependencies"
+  end
+
+  say 'Installing Yarn'
+  system! 'curl -o- -L https://yarnpkg.com/install.sh | bash -s -- --version 1.22.15'
+
+  say 'Installing dependencies'
+  system! 'gem install bundler --conservative'
+  system! 'gem install foreman --conservative'
+  system('bundle check') || system!('bundle install')
+
+  # Install JavaScript dependencies
+  say 'Installing Javascript dependencies'
+  system! 'bin/yarn'
+
+  # puts "\n== Copying sample files =="
+  # unless File.exist?('config/database.yml')
+  #   FileUtils.cp 'config/database.yml.sample', 'config/database.yml'
+  # end
+
+  say 'Preparing database'
+  system! 'bin/rails db:drop'
+  system! 'bin/rails db:create'
+  system! 'bin/rails db:migrate'
+
+  say 'Removing old logs and tempfiles'
+  system! 'bin/rails log:clear tmp:clear'
+
+end

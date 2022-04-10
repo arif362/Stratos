@@ -1,0 +1,402 @@
+Table "active_admin_comments" {
+  "id" int [pk]
+  "namespace" string
+  "body" text
+  "resource_type" string
+  "resource_id" bigint
+  "author_type" string
+  "author_id" bigint
+  "created_at" datetime
+  "updated_at" datetime
+}
+
+Table "active_storage_attachments" {
+  "id" int [pk]
+  "name" string
+  "record_type" string
+  "record_id" bigint
+  "blob_id" bigint
+  "created_at" datetime
+}
+
+Table "active_storage_blobs" {
+  "id" int [pk]
+  "key" string
+  "filename" string
+  "content_type" string
+  "metadata" text
+  "service_name" string
+  "byte_size" bigint
+  "checksum" string
+  "created_at" datetime
+}
+
+Table "active_storage_variant_records" {
+  "id" int [pk]
+  "blob_id" bigint
+  "variation_digest" string
+}
+
+Table "budget_items" {
+  "id" int [pk]
+  "approved_budget" decimal
+  "anticipated_cost" decimal
+  "expenditures_to_date" decimal
+  "created_at" datetime
+  "updated_at" datetime
+  "project_id" bigint
+  "line_item_id" bigint
+}
+
+Ref "fk_rails_line_items_budget_items" {
+  "budget_items"."line_item_id" > "line_items"."id"
+}
+
+Table "categories" {
+  "id" int [pk]
+  "name" string
+  "created_at" datetime
+  "updated_at" datetime
+}
+
+Table "sub_categories" {
+  "id" int [pk]
+  "name" string
+  "created_at" datetime
+  "updated_at" datetime
+  "category_id" bigint
+}
+
+Table "category_breakdowns" {
+  "id" int [pk]
+  "name" string
+  "created_at" datetime
+  "updated_at" datetime
+  "sub_category_id" bigint
+}
+
+Ref "fk_rails_categories_sub_category" {
+  "sub_categories"."category_id" > "categories"."id"
+}
+
+Ref "fk_rails_sub_categories_category_breakdown" {
+  "category_breakdowns"."sub_category_id" > "sub_categories"."id"
+}
+
+Table "companies" [headercolor: #2c3e50,note:'Managed from ActiveAdmin'] {
+  "id" int [pk]
+  "name" string
+  "users_count" integer
+  "projects_count" integer
+  "created_at" datetime
+  "updated_at" datetime
+}
+
+Table "contacts" [headercolor: #2c3e50] {
+  "id" int [pk]
+  "first_name" string
+  "last_name" string
+  "title" string
+  "phone" string
+  "created_at" datetime
+  "updated_at" datetime
+}
+
+
+Table "process_components" [headercolor: #27ae60] {
+  "id" int [pk]
+  "template_id" bigint
+  "identifier" string
+  "type" string
+  "name" string
+  "description" text
+  "starts_at" datetime
+  "ends_at" datetime
+  "completed_at" datetime
+  "created_at" datetime
+  "updated_at" datetime
+  "ancestry" string
+  phase_id bigint
+}
+
+Ref {
+  phases.id > process_components.phase_id
+}
+
+Table "projects" [headercolor: #8e44ad] {
+  "id" int [pk]
+  "identifier" string
+  "name" string
+  "description" text
+  "created_at" datetime
+  "updated_at" datetime
+  "company_id" bigint
+  "due_date" datetime
+  "location" string
+  "budget_cents" integer
+  "cost_cents" integer
+}
+
+Table "risks" [headercolor: #8e44ad] {
+  "id" int [pk]
+  "name" string
+  "impact" string [note: 'Allowed Time, Finance, Other']
+  "rank" integer [note: 'low: 0, medium: 1, high: 2']
+  "critical" boolean
+  "due_date" datetime
+  "created_at" datetime
+  "updated_at" datetime
+  "project_id" bigint [ref: > projects.id]
+  "user_id" bigint
+
+  Indexes {
+    (project_id) [name:'idx_risks_project_id_1']
+    (user_id) [name:'idx_risks_user_id_1project_id_idx_1']
+    id [unique]
+  }
+}
+
+Table "user_roles" [headercolor: #d35400] {
+  "id" int [pk]
+  "name" string
+  "company_id" bigint
+  "created_at" datetime
+  "updated_at" datetime
+}
+
+Table notes [headercolor: #8e44ad] {
+  id int [pk]
+  body text
+  project_id bigint [ref: > projects.id]
+}
+
+Table "users" [headercolor: #d35400,note: 'Managed from ActiveAdmin'] {
+  "id" int [pk]
+  "company_id" bigint
+  "contact_id" bigint
+  "user_role_id" bigint
+  email string [note:'A user is actually an account email+pass. A contact can have multiple users.']
+  "encrypted_password" string
+  "reset_password_token" string
+  "reset_password_sent_at" datetime
+  "remember_created_at" datetime
+  "sign_in_count" integer
+  "current_sign_in_at" datetime
+  "last_sign_in_at" datetime
+  "current_sign_in_ip" string
+  "last_sign_in_ip" string
+  "confirmation_token" string
+  "confirmed_at" datetime
+  "confirmation_sent_at" datetime
+  "unconfirmed_email" string
+  "failed_attempts" integer
+  "unlock_token" string
+  "locked_at" datetime
+  "created_at" datetime
+  "updated_at" datetime
+  "state" jsonb [note: 'Save the state of the user']
+}
+
+Ref {
+  contacts.id < users.contact_id
+}
+
+Table "tasks" [headercolor: #27ae60] {
+  "id" int [pk]
+  "name" varchar
+  "due_date" date
+  "critical" boolean
+  user_id bigint [note: 'Assignee']
+  step_id bigint
+  template_file string
+  managed_by bigint
+  approved_by bigint
+}
+
+Ref {
+  users.id < tasks.user_id
+}
+
+Ref {
+  steps.id < tasks.step_id
+}
+
+Ref {
+  tasks.managed_by - users.id
+}
+
+Ref {
+  tasks.approved_by - users.id
+}
+
+Table "templates" [headercolor: #f39c12] {
+  "id" integer [pk]
+  "name" varchar
+  filetype string [note: 'pdf, doc']
+}
+
+Ref {
+  process_components.template_id > templates.id
+}
+
+Table "line_items" {
+  "id" int [pk]
+  "name" string
+  "created_at" datetime
+  "updated_at" datetime
+  "project_id" bigint
+  "category_breakdown_id" bigint
+}
+
+Ref "fk_rails_projects_line_items" {
+  "line_items"."project_id" > "projects"."id"
+}
+
+Ref "fk_rails_category_breakdowns_line_itemts" {
+  "line_items"."category_breakdown_id" > "category_breakdowns"."id"
+}
+
+Table contracts {
+  id bigint [pk]
+  "firm_name" string
+  "contract_breakdown" string
+  "commitment_date" date
+  "commitment_value" decimal
+  "expenditures_to_date" decimal
+  "created_at" datetime
+  "updated_at" datetime
+  project_id bigint
+  budget_item_id bigint
+}
+
+Ref "fk_rails_projects_contracts" {
+  "contracts"."project_id" > "projects"."id"
+}
+
+Ref "fk_rails_budget_items_contracts" {
+  "contracts"."budget_item_id" > "budget_items"."id"
+}
+
+Table invoices {
+  id bigint [pk]
+  "number" integer
+  "value"  decimal
+  "status" integer
+  "contract_breakdown" string
+  "firm_name" string
+  "recommended_status_date" datetime
+  "create_at" datetime
+  "updated_at" datetime
+  "project_id" bigint
+  "contract_id" bigint
+}
+
+Ref "fk_rails_projects_invoices" {
+  "invoices"."project_id" > "projects"."id"
+}
+
+Ref "fk_rails_contracts_invoices" {
+  "invoices"."contract_id" > "contracts"."id"
+}
+
+
+// FYI:ioigoume
+// Ref {
+// }
+
+Table steps [headercolor: #27ae60,note:'Steps are the header values'] {
+  id bigint [pk]
+  "name" string
+  "starts_at" datetime
+  "ends_at" datetime
+  "completed_at" datetime
+  "created_at" datetime
+  "updated_at" datetime
+  user_role_id bigint [note:'The step needs a user role']
+  process_component_id bigint
+}
+
+Ref {
+  user_roles.id < steps.user_role_id
+}
+
+Ref {
+  process_components.id < steps.process_component_id
+}
+
+Table phases [headercolor: #27ae60] {
+  id bigint [pk]
+  "name" string
+  "starts_at" datetime
+  "ends_at" datetime
+  "baseline_start" datetime
+  "baseline_end" datetime
+  "completed_at" datetime
+  "created_at" datetime
+  "updated_at" datetime
+  project_id bigint
+}
+
+Ref {
+  phases.project_id < projects.id
+}
+
+Table activities [headercolor: #8e44ad] {
+  id integer [pk]
+  name varchar
+  duration integer
+  baseline_start date
+  baseline_end date
+  starts_at date
+  ends_at date
+  predecessor varchar
+  link_type string
+  project_id bigint [ref: > projects.id]
+}
+
+TableGroup Finance {
+ budget_items
+ categories
+ sub_categories
+ category_breakdowns
+ invoices
+ line_items
+ contracts
+}
+
+TableGroup AAI {
+  companies
+  contacts
+  user_roles
+  users
+}
+
+TableGroup Process {
+  process_components
+  tasks
+  phases
+  steps
+}
+
+TableGroup Project {
+  risks
+  projects
+  activities
+  notes
+}
+
+Ref "fk_rails_active_storage_attachments_active_storage_blobs":"active_storage_attachments"."blob_id" - "active_storage_blobs"."id"
+
+Ref "fk_rails_active_storage_variant_records_active_storage_blobs":"active_storage_variant_records"."blob_id" - "active_storage_blobs"."id"
+
+Ref "fk_rails_budget_items_projects":"budget_items"."project_id" - "projects"."id"
+
+Ref "fk_rails_projects_companies":"projects"."company_id" - "companies"."id"
+
+Ref "fk_rails_risks_users":"risks"."user_id" - "users"."id"
+
+Ref "fk_rails_user_roles_companies":"user_roles"."company_id" - "companies"."id"
+
+Ref "fk_rails_users_companies":"users"."company_id" - "companies"."id"
+
+Ref "fk_rails_users_user_roles":"users"."user_role_id" - "user_roles"."id"

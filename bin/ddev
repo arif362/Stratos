@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+# Remove a potentially pre-existing server.pid for Rails.
+rm -f tmp/pids/server.pid
+
+yarn build --watch &
+yarn build:css --watch &
+
+bundle exec rails s -p 3000 -b '0.0.0.0'

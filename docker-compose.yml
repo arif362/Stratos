@@ -1,0 +1,38 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:14.2-bullseye
+    container_name: pg.stratos.14
+    user: root
+    privileged: true
+    volumes:
+      - ./pg-init-scripts:/docker-entrypoint-initdb.d
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_MULTIPLE_DATABASES=stratos_development,stratos_test
+      - POSTGRES_USER=stratos_user
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "127.0.0.1:55432:5432"
+    tty: true # this is used to prevent container from exiting if the entrypoint is /bin/bash
+    stdin_open: true
+  web:
+    depends_on:
+      - db
+    build: .
+    environment:
+      - DATABASE_URL=postgresql://stratos_user:@db/stratos_development
+    command: bash -c "bin/dev"
+    ports:
+      - "3000:3000"
+    volumes:
+      - bundle:/bundle
+      - .:/app
+    tty: true
+
+volumes:
+  bundle:
+  pgdata:
+
+
