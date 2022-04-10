@@ -11,7 +11,7 @@ gem 'devise-jwt', '~> 0.9'          # https://github.com/waiting-for-dev/devise-
 gem 'pundit', '~> 2.1'              # https://github.com/varvet/pundit
 gem 'jsonapi-serializer', '~> 2.2'  # https://github.com/jsonapi-serializer/jsonapi-serializer
 gem 'dry-rails', '~> 0.4'           # https://github.com/dry-rb/dry-rails
-gem 'cssbundling-rails', '~> 0.2'   # https://github.com/rails/cssbundling-rails
+# gem 'cssbundling-rails', '~> 0.2'   # https://github.com/rails/cssbundling-rails
 # gem 'jsbundling-rails', '~> 0.2'    # https://github.com/rails/jsbundling-rails
 gem 'ancestry', '~> 4.1'            # https://github.com/stefankroes/ancestry
 gem 'activeadmin', '~> 2.9.0'       # https://github.com/activeadmin/activeadmin
