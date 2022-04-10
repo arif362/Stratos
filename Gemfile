@@ -17,6 +17,7 @@ gem 'ancestry', '~> 4.1'            # https://github.com/stefankroes/ancestry
 gem 'activeadmin', '~> 2.9.0'       # https://github.com/activeadmin/activeadmin
 gem 'bootsnap', '>= 1.4.4', require: false # Reduces boot times through caching; required in config/boot.rb
 gem "figaro"
+gem "webpacker"
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw] # Call 'byebug' anywhere in the code to stop execution and get a debugger console
