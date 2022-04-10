@@ -169,5 +169,5 @@ if Rails.env.development?
     )
   end
 
-  Rake::Task['categories:create_major_and_sub_categories'].invoke
+  # Rake::Task['categories:create_major_and_sub_categories'].invoke
 end
